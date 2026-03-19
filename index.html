@@ -96,16 +96,18 @@
     <!-- GUÍAS -->
     <div id="tab-guias" class="tab">
       <h2>Guías en PDF</h2>
-      <p class="sub">Sube una guía PDF para visualizarla directamente aquí.</p>
-      <div class="upload-area" onclick="document.getElementById('pdf-input').click()">
-        <div class="upload-icon">📁</div>
-        <div class="upload-title">Haz clic para subir un PDF</div>
-        <div class="upload-sub">Solo archivos .pdf</div>
-        <input id="pdf-input" type="file" accept="application/pdf" style="display:none" onchange="loadPdf(event)"/>
-      </div>
-      <div id="pdf-viewer" style="display:none">
-        <div class="pdf-name"><span>📄</span><span id="pdf-name-text"></span></div>
-        <iframe id="pdf-frame"></iframe>
+      <p class="sub">Selecciona una guía para visualizarla directamente aquí.</p>
+      <div style="display:flex;gap:16px">
+        <div style="width:260px;flex-shrink:0;display:flex;flex-direction:column;gap:6px" id="pdf-list"></div>
+        <div style="flex:1">
+          <div id="pdf-viewer" style="display:none">
+            <div class="pdf-name"><span>📄</span><span id="pdf-name-text"></span></div>
+            <iframe id="pdf-frame" style="width:100%;height:520px;border:1px solid #e5e7eb;border-radius:8px"></iframe>
+          </div>
+          <div id="pdf-placeholder" style="height:520px;border:1px dashed #e5e7eb;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:13px">
+            Selecciona una guía de la lista
+          </div>
+        </div>
       </div>
     </div>
 
@@ -170,13 +172,48 @@ function showTab(id, btn) {
   }
 }
 
-function loadPdf(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  document.getElementById('pdf-name-text').textContent = file.name;
-  document.getElementById('pdf-frame').src = URL.createObjectURL(file);
-  document.getElementById('pdf-viewer').style.display = 'block';
-}
+const PDFS = [
+  "Cómo activar y visualizar el progreso de los estudiantes en Blackboard.pdf",
+  "Cómo calificar evaluaciones en Blackboard.pdf",
+  "Cómo cambiar la privacidad de un curso en Blackboard.pdf",
+  "Cómo comunicarse con los estudiantes en Blackboard.pdf",
+  "Cómo crear carpetas en un curso de Blackboard.pdf",
+  "Cómo crear grupos de trabajo en Blackboard.pdf",
+  "Cómo crear módulos de aprendizaje en un curso de Blackboard.pdf",
+  "Cómo crear un banco de preguntas en Blackboard.pdf",
+  "Cómo crear un debate en Blackboard.pdf",
+  "Cómo crear un examen en Blackboard..pdf",
+  "Cómo crear una actividad en Blackboard..pdf",
+  "Cómo crear una rúbrica en Blackboard.pdf",
+  "Cómo ingresar a un curso en Blackboard.pdf",
+  "Cómo insertar un enlace en un curso de Blackboard.pdf",
+  "Cómo modificar la imagen de un curso en Blackboard.pdf",
+  "Cómo realizar un respaldo de un curso en Blackboard.pdf",
+  "Cómo subir archivos en un curso de Blackboard.pdf",
+  "Cómo usar el calendario de un curso en Blackboard.pdf",
+  "Cómo visualizar la lista de participantes de un curso en Blackboard.pdf",
+  "Cómo visualizar las estadísticas de los alumnos en Blackboard.pdf"
+];
+
+const pdfList = document.getElementById('pdf-list');
+PDFS.forEach(name => {
+  const btn = document.createElement('button');
+  btn.textContent = name.replace('.pdf','').replace('..','.');
+  btn.style.cssText = 'text-align:left;padding:8px 10px;font-size:12px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;cursor:pointer;font-family:inherit;color:#111;line-height:1.4';
+  btn.onmouseenter = () => btn.style.borderColor = '#0a3d6b';
+  btn.onmouseleave = () => { if(!btn.classList.contains('sel')) btn.style.borderColor='#e5e7eb'; };
+  btn.onclick = () => {
+    document.querySelectorAll('#pdf-list button').forEach(b => { b.style.borderColor='#e5e7eb'; b.style.background='#fff'; b.classList.remove('sel'); });
+    btn.style.borderColor = '#0a3d6b';
+    btn.style.background = '#f0f5ff';
+    btn.classList.add('sel');
+    document.getElementById('pdf-name-text').textContent = name.replace('..pdf','.pdf');
+    document.getElementById('pdf-frame').src = encodeURIComponent(name);
+    document.getElementById('pdf-viewer').style.display = 'block';
+    document.getElementById('pdf-placeholder').style.display = 'none';
+  };
+  pdfList.appendChild(btn);
+});
 
 const msgs = [{role:'assistant',content:'Hola, soy tu asistente de Blackboard. ¿En qué puedo ayudarte hoy?'}];
 renderMsgs();
@@ -199,18 +236,13 @@ async function sendMsg() {
   document.getElementById('chat-messages').innerHTML += '<div class="msg assistant"><div class="bubble assistant typing">Escribiendo...</div></div>';
   document.getElementById('chat-messages').scrollTop = 99999;
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('/api/chat', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        system:'Eres un asistente especializado en Blackboard para docentes universitarios. Responde de forma clara, concisa y profesional en español. Da pasos concretos cuando sea necesario. Máximo 3-4 oraciones.',
-        messages: msgs.map(m => ({role:m.role, content:m.content}))
-      })
+      body: JSON.stringify({ messages: msgs.map(m => ({role:m.role, content:m.content})) })
     });
     const data = await res.json();
-    const reply = data.content?.[0]?.text || 'No pude procesar tu consulta.';
+    const reply = data.reply || 'No pude procesar tu consulta.';
     msgs.push({role:'assistant',content:reply});
   } catch {
     msgs.push({role:'assistant',content:'Error al conectar. Intenta nuevamente.'});
