@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // Archivo: api/chat.js — súbelo en la carpeta "api/" de tu repositorio
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -9,24 +8,28 @@ export default async function handler(req, res) {
 
   const { messages } = req.body;
 
+  const systemPrompt = "Eres un asistente especializado en Blackboard para docentes universitarios. Responde de forma clara, concisa y profesional en español. Da pasos concretos cuando sea necesario. Máximo 3-4 oraciones o pasos numerados.";
+
+  const geminiMessages = messages.map(m => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }]
+  }));
+
   try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01"
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1000,
-        system: "Eres un asistente especializado en Blackboard para docentes universitarios. Responde de forma clara, concisa y profesional en español. Da pasos concretos cuando sea necesario. Máximo 3-4 oraciones o pasos numerados.",
-        messages
-      })
-    });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemPrompt }] },
+          contents: geminiMessages
+        })
+      }
+    );
 
     const data = await response.json();
-    const reply = data.content?.[0]?.text || "No pude procesar tu consulta.";
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "No pude procesar tu consulta.";
     res.status(200).json({ reply });
   } catch (err) {
     res.status(500).json({ error: "Error al conectar con el asistente." });
