@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Portal Blackboard Docentes</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f6f9; min-height: 100vh; padding: 1.5rem; }
+  .container { max-width: 800px; margin: 0 auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .header { background: #0a3d6b; padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 12px; }
+  .header-icon { width: 36px; height: 36px; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .header-title { color: #fff; font-size: 16px; font-weight: 500; }
+  .header-sub { color: rgba(255,255,255,0.7); font-size: 12px; }
+  nav { display: flex; border-bottom: 1px solid #e5e7eb; background: #fff; }
+  nav button { flex: 1; padding: 0.75rem 0; font-size: 13px; background: none; border: none; border-bottom: 2px solid transparent; color: #6b7280; cursor: pointer; font-family: inherit; }
+  nav button.active { color: #0a3d6b; border-bottom-color: #0a3d6b; font-weight: 500; }
+  .content { padding: 1.5rem; }
+  .tab { display: none; }
+  .tab.active { display: block; }
+  h2 { font-size: 18px; font-weight: 500; margin-bottom: 4px; color: #111; }
+  .sub { font-size: 13px; color: #6b7280; margin-bottom: 20px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 20px; }
+  .card { padding: 1rem 1.25rem; border: 1px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: border-color 0.15s; }
+  .card:hover { border-color: #0a3d6b; }
+  .card-icon { font-size: 24px; margin-bottom: 8px; }
+  .card-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .card-desc { font-size: 12px; color: #6b7280; }
+  .upload-area { border: 1.5px dashed #d1d5db; border-radius: 10px; padding: 2rem; text-align: center; cursor: pointer; background: #f9fafb; margin-bottom: 20px; }
+  .upload-area:hover { border-color: #0a3d6b; }
+  .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .upload-sub { font-size: 12px; color: #6b7280; }
+  #pdf-frame { width: 100%; height: 500px; border: 1px solid #e5e7eb; border-radius: 8px; }
+  .pdf-name { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 14px; font-weight: 500; }
+  .faq-item { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; margin-bottom: 8px; }
+  .faq-q { width: 100%; text-align: left; padding: 0.875rem 1rem; background: #fff; border: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 500; font-family: inherit; color: #111; }
+  .faq-q.open { background: #f9fafb; }
+  .faq-a { display: none; padding: 0.875rem 1rem; font-size: 13px; color: #6b7280; line-height: 1.6; border-top: 1px solid #e5e7eb; }
+  .faq-a.open { display: block; }
+  .chat-messages { height: 360px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 10px; padding: 1rem; margin-bottom: 12px; display: flex; flex-direction: column; gap: 12px; background: #f9fafb; }
+  .msg { display: flex; }
+  .msg.user { justify-content: flex-end; }
+  .bubble { max-width: 75%; padding: 0.625rem 0.875rem; border-radius: 12px; font-size: 13px; line-height: 1.6; }
+  .bubble.assistant { background: #fff; border: 1px solid #e5e7eb; color: #111; }
+  .bubble.user { background: #0a3d6b; color: #fff; }
+  .bubble.typing { color: #6b7280; }
+  .chat-input { display: flex; gap: 8px; }
+  .chat-input input { flex: 1; padding: 0.625rem 0.875rem; font-size: 13px; border-radius: 8px; border: 1px solid #d1d5db; font-family: inherit; outline: none; }
+  .chat-input input:focus { border-color: #0a3d6b; }
+  .chat-input button { padding: 0.625rem 1rem; background: #0a3d6b; color: #fff; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: inherit; }
+  .chat-input button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .welcome { font-size: 14px; color: #374151; line-height: 1.6; margin-bottom: 24px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="header-icon">🎓</div>
+    <div>
+      <div class="header-title">Portal Blackboard Docentes</div>
+      <div class="header-sub">Guías y soporte para docentes</div>
+    </div>
+  </div>
+  <nav>
+    <button class="active" onclick="showTab('inicio',this)">Inicio</button>
+    <button onclick="showTab('guias',this)">Guías PDF</button>
+    <button onclick="showTab('faq',this)">FAQ</button>
+    <button onclick="showTab('chat',this)">Asistente IA</button>
+  </nav>
+  <div class="content">
+
+    <!-- INICIO -->
+    <div id="tab-inicio" class="tab active">
+      <h2>Bienvenido al portal de aprendizaje</h2>
+      <p class="welcome" style="margin-top:8px">Aquí encontrarás todo lo que necesitas para dominar Blackboard: guías en PDF, preguntas frecuentes y un asistente con IA disponible en todo momento.</p>
+      <div class="cards">
+        <div class="card" onclick="showTab('guias',null)">
+          <div class="card-icon">📄</div>
+          <div class="card-title">Guías PDF</div>
+          <div class="card-desc">Accede y visualiza las guías oficiales</div>
+        </div>
+        <div class="card" onclick="showTab('faq',null)">
+          <div class="card-icon">❓</div>
+          <div class="card-title">Preguntas frecuentes</div>
+          <div class="card-desc">Respuestas a las dudas más comunes</div>
+        </div>
+        <div class="card" onclick="showTab('chat',null)">
+          <div class="card-icon">🤖</div>
+          <div class="card-title">Asistente IA</div>
+          <div class="card-desc">Consulta al asistente en tiempo real</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GUÍAS -->
+    <div id="tab-guias" class="tab">
+      <h2>Guías en PDF</h2>
+      <p class="sub">Sube una guía PDF para visualizarla directamente aquí.</p>
+      <div class="upload-area" onclick="document.getElementById('pdf-input').click()">
+        <div class="upload-icon">📁</div>
+        <div class="upload-title">Haz clic para subir un PDF</div>
+        <div class="upload-sub">Solo archivos .pdf</div>
+        <input id="pdf-input" type="file" accept="application/pdf" style="display:none" onchange="loadPdf(event)"/>
+      </div>
+      <div id="pdf-viewer" style="display:none">
+        <div class="pdf-name"><span>📄</span><span id="pdf-name-text"></span></div>
+        <iframe id="pdf-frame"></iframe>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div id="tab-faq" class="tab">
+      <h2>Preguntas frecuentes</h2>
+      <p class="sub">Las dudas más comunes sobre el uso de Blackboard.</p>
+      <div id="faq-list"></div>
+    </div>
+
+    <!-- CHAT -->
+    <div id="tab-chat" class="tab">
+      <h2>Asistente IA</h2>
+      <p class="sub">Haz cualquier pregunta sobre Blackboard y te respondo al instante.</p>
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-input">
+        <input id="chat-input" type="text" placeholder="Escribe tu pregunta sobre Blackboard..." onkeydown="if(event.key==='Enter') sendMsg()"/>
+        <button id="send-btn" onclick="sendMsg()">Enviar</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const FAQ = [
+  {q:"¿Cómo accedo a Blackboard?",a:"Ingresa a la página institucional, busca el enlace a Blackboard e inicia sesión con tu usuario y contraseña institucional."},
+  {q:"¿Cómo subo material a mis cursos?",a:"Dentro de tu curso, ve a 'Contenido del curso', haz clic en 'Crear' y selecciona 'Cargar' para subir archivos desde tu computadora."},
+  {q:"¿Cómo creo una tarea para mis estudiantes?",a:"Ve a 'Contenido del curso', haz clic en 'Crear', selecciona 'Tarea' y completa los campos: nombre, instrucciones, fecha de entrega y puntos."},
+  {q:"¿Cómo se califica en el libro de calificaciones?",a:"Dirígete a 'Libro de calificaciones' en el menú de tu curso. Allí puedes ver, ingresar y editar las notas de cada estudiante por actividad."},
+  {q:"¿Cómo creo un foro de discusión?",a:"En 'Contenido del curso', haz clic en 'Crear' y selecciona 'Debate'. Define el tema y las instrucciones para que los estudiantes puedan participar."},
+  {q:"¿Cómo envío un mensaje a mis estudiantes?",a:"Usa la herramienta 'Mensajes' en el menú de tu curso para enviar comunicados a todos o a estudiantes específicos."},
+  {q:"¿Cómo organizo el contenido por semanas o módulos?",a:"En 'Contenido del curso', puedes crear carpetas o módulos para organizar el material por semanas, temas o unidades."},
+  {q:"¿Cómo habilito o deshabilito la visibilidad de un contenido?",a:"Junto a cada elemento del curso verás un ícono de visibilidad. Haz clic en él para publicar o ocultar el contenido a los estudiantes."}
+];
+
+const faqList = document.getElementById('faq-list');
+FAQ.forEach((item,i) => {
+  faqList.innerHTML += `<div class="faq-item">
+    <button class="faq-q" onclick="toggleFaq(${i},this)">${item.q}<span>▼</span></button>
+    <div class="faq-a" id="faq-a-${i}">${item.a}</div>
+  </div>`;
+});
+
+function toggleFaq(i, btn) {
+  const a = document.getElementById('faq-a-'+i);
+  const open = a.classList.contains('open');
+  document.querySelectorAll('.faq-a').forEach(el => el.classList.remove('open'));
+  document.querySelectorAll('.faq-q').forEach(el => el.classList.remove('open'));
+  if (!open) { a.classList.add('open'); btn.classList.add('open'); }
+}
+
+function showTab(id, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  else {
+    const btns = document.querySelectorAll('nav button');
+    const map = {inicio:0, guias:1, faq:2, chat:3};
+    btns[map[id]].classList.add('active');
+  }
+}
+
+function loadPdf(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  document.getElementById('pdf-name-text').textContent = file.name;
+  document.getElementById('pdf-frame').src = URL.createObjectURL(file);
+  document.getElementById('pdf-viewer').style.display = 'block';
+}
+
+const msgs = [{role:'assistant',content:'Hola, soy tu asistente de Blackboard. ¿En qué puedo ayudarte hoy?'}];
+renderMsgs();
+
+function renderMsgs() {
+  const el = document.getElementById('chat-messages');
+  el.innerHTML = msgs.map(m => `<div class="msg ${m.role}"><div class="bubble ${m.role}">${m.content}</div></div>`).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+async function sendMsg() {
+  const inp = document.getElementById('chat-input');
+  const btn = document.getElementById('send-btn');
+  const text = inp.value.trim();
+  if (!text) return;
+  msgs.push({role:'user',content:text});
+  inp.value = '';
+  btn.disabled = true;
+  renderMsgs();
+  document.getElementById('chat-messages').innerHTML += '<div class="msg assistant"><div class="bubble assistant typing">Escribiendo...</div></div>';
+  document.getElementById('chat-messages').scrollTop = 99999;
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:'Eres un asistente especializado en Blackboard para docentes universitarios. Responde de forma clara, concisa y profesional en español. Da pasos concretos cuando sea necesario. Máximo 3-4 oraciones.',
+        messages: msgs.map(m => ({role:m.role, content:m.content}))
+      })
+    });
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || 'No pude procesar tu consulta.';
+    msgs.push({role:'assistant',content:reply});
+  } catch {
+    msgs.push({role:'assistant',content:'Error al conectar. Intenta nuevamente.'});
+  }
+  btn.disabled = false;
+  renderMsgs();
+}
+</script>
+</body>
+</html>
