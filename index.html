@@ -207,10 +207,10 @@ PDFS.forEach(name => {
     btn.style.borderColor = '#0a3d6b';
     btn.style.background = '#f0f5ff';
     btn.classList.add('sel');
-   document.getElementById('pdf-name-text').textContent = name.replace('..pdf','.pdf');
-   document.getElementById('pdf-frame').src = '/' + encodeURIComponent(name);
-   document.getElementById('pdf-viewer').style.display = 'block';
-   document.getElementById('pdf-placeholder').style.display = 'none';
+    document.getElementById('pdf-name-text').textContent = name.replace('..pdf','.pdf');
+    document.getElementById('pdf-frame').src = 'https://raw.githubusercontent.com/acaledos-art/portal-blackboard/main/' + encodeURIComponent(name);
+    document.getElementById('pdf-viewer').style.display = 'block';
+    document.getElementById('pdf-placeholder').style.display = 'none';
   };
   pdfList.appendChild(btn);
 });
